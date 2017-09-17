@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Hole : MonoBehaviour {
 
+    // Tablica przeszkód
     public GameObject[] spawnPoints;
 
 	// Use this for initialization
@@ -11,6 +12,7 @@ public class Hole : MonoBehaviour {
         GenerateObstacle();
 	}
 
+    // Generator przeszkód - w losowych miejscach na mapie pojawiają się dziury
     void GenerateObstacle()
     {
         int random = Random.Range(0, spawnPoints.Length);

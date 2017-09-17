@@ -42,23 +42,93 @@ public class PlayerController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        // Controller
+        // Gaz, hamulec
+        speed += speedUpdate(speed);
+        // Prawo, lewo
+        xAxis = xAxisUpdate(skid);
+
+        // Poślizg
+        // TODO: skid
+
+        // Zmiana w fizyce samochodu gracza
+        rb2d.velocity = new Vector2(xAxis, speed);
+
+    }
+
+    // Fixed Update
+    void FixedUpdate()
+    {
+        Debug.Log("SPEED: " + speed); // TODO: tymczasowe - do usunięcia w wersji RELEASE
+    }
+
+    // On Trigger Enter 2D
+    void OnTriggerEnter2D(Collider2D col)
+    {
+        // TODO: skidTrigger
+        // W momencie kiedy samochód gracza najedzie na dziurę, wywoła trigger, który spowoduje wpadnięcie w poślizg
+        /*if (col.gameObject.CompareTag("Hole"))
+        {
+            skid = true;
+            skidInit = Time.realtimeSinceStartup;
+        }*/
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    ///
+    /// Metody dotyczące fizyki samochodu
+    /// 
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+    private float speedUpdate(float speed)
+    {
         if (Input.GetButton("Accelerator") && !Input.GetButton("Brake") && speed < maxSpeed)
-            speed += 2f;
-        else if (speed > 0) speed -= 1f;
-        if (Input.GetButton("Brake") && speed >= 0)
-            speed -= 4f;
+        {
+            return 2f;
+        }
+        else
+        {
+            if (!Input.GetButton("Accelerator") && !Input.GetButton("Brake") && speed > 0)
+            {
+                return -1f;
+            } 
+            else
+            {
+                if (Input.GetButton("Brake") && speed >= 0)
+                {
+                    return -4f;
+                }
+                else
+                {
+                    return 0f;
+                }
+            }
+        }
+    }
+
+    private float xAxisUpdate(bool skid)
+    {
         if (Input.GetButton("Left") && !skid)
         {
-            xAxis = -100f;
-            if (Input.GetButton("Right")) xAxis = 0f;
+            if (Input.GetButton("Right"))
+            {
+                return 0f;
+            }
+            return -100f;
         }
         if (Input.GetButton("Right") && !skid)
         {
-            xAxis = 100f;
-            if (Input.GetButton("Left")) xAxis = 0f;
-        }   
-        if (!Input.GetButton("Left") && !Input.GetButton("Right")) xAxis = 0f;
+            if (Input.GetButton("Left"))
+            {
+                return 0f;
+            }
+            return 100f;
+        }
+        return 0f;
+    }
+
+    // TODO: skidUpdate and skidChecker
+    private void skidUpdate()
+    {
         if (skid)
         {
             if (!skidStart)
@@ -76,23 +146,6 @@ public class PlayerController : MonoBehaviour {
                 animator.SetBool("CircleSkidLeft", circleSkid);
             }
         }
-        rb2d.velocity = new Vector2(xAxis, speed);
-
     }
 
-    // Fixed Update
-    void FixedUpdate()
-    {
-        Debug.Log("SPEED: " + speed);
-    }
-
-    // On Trigger Enter 2D
-    void OnTriggerEnter2D(Collider2D col)
-    {
-        if (col.gameObject.CompareTag("Hole"))
-        {
-            skid = true;
-            skidInit = Time.realtimeSinceStartup;
-        }
-    }
 }
