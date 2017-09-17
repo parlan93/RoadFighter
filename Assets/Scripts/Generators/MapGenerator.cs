@@ -6,10 +6,8 @@ public class MapGenerator : MonoBehaviour {
 
     // Stałe
     private const int MAP_START_FIXED_FRAGMENTS = 6;
-    private const int MAP_FRAGMENTS = 60;
-    // TODO: dodanie na końcu trasy fragmentów z linią mety
-    private const int MAP_END_FIXED_FRAGMENTS = 0; 
-
+    private const int MAP_FRAGMENTS = 20;
+    
     // Tablica prefabrykatów, z których złożona ma być mapa
     public GameObject[] mapPrefabs;
 
@@ -31,11 +29,13 @@ public class MapGenerator : MonoBehaviour {
         for (int i = MAP_START_FIXED_FRAGMENTS; i < MAP_FRAGMENTS; i++)
         {
             // Losuje prefabrykat mapy
-            int randomMapFragment = Random.Range(0, mapPrefabs.Length);
+            int randomMapFragment = Random.Range(0, mapPrefabs.Length - 2);
             // Ustala pozycje na mapie, w której ma pojawić się losowy prefabrykat
             var pos = new Vector3(0, i * 288f, transform.position.z);
             // Tworzy klon prefabrykatu
             Instantiate(mapPrefabs[randomMapFragment], pos, Quaternion.Euler(Vector3.zero)); 
         }
+        Instantiate(mapPrefabs[mapPrefabs.Length - 1], new Vector3(0, MAP_FRAGMENTS * 288f), Quaternion.Euler(Vector3.zero));
+        Instantiate(mapPrefabs[mapPrefabs.Length - 2], new Vector3(0, (MAP_FRAGMENTS + 1) * 288f), Quaternion.Euler(Vector3.zero));
     }
 }

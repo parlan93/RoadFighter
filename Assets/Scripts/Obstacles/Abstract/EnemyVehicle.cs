@@ -4,7 +4,7 @@ using UnityEngine;
 
 public abstract class EnemyVehicle : MonoBehaviour {
 
-    protected float speed = 300f;
+    protected float speed = 280f;
     protected Vector2 v2 = new Vector2(0, 1);
     protected Rigidbody2D rb2d;
     protected BoxCollider2D bc2d;
@@ -39,7 +39,7 @@ public abstract class EnemyVehicle : MonoBehaviour {
     
     protected void OnCollisionEnter2DComponent(Collision2D col)
     {
-        if (!audioSource.isPlaying)
+        if (!audioSource.isPlaying && col.gameObject.tag == "Player")
         {
             audioSource.Play();
         }

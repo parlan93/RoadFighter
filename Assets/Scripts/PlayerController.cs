@@ -8,13 +8,14 @@ public class PlayerController : MonoBehaviour {
     {
         READY,
         PLAYING,
+        FINISH,
         GAMEOVER
     }
 
+    public AudioSource[] audioSources;
     public static PlayerState playerState { get; set; }
     Rigidbody2D rb2d;
     Animator animator;
-    AudioSource audioSource;
     float speed = 0f;
     float maxSpeed = 400f;
     float xAxis = 0f;
@@ -27,30 +28,62 @@ public class PlayerController : MonoBehaviour {
     int skidLeft = 0;
     float circleSkidInit = 0f;
     int circleSkidLeft = 0;
+
+    bool isStartCeremony = true;
+    float startCeremonyInitTime = Time.realtimeSinceStartup;
+    int sirensReady = 0;
+    bool sirenGo = false;
     
     // Use this for initialization
     void Start () {
-        playerState = PlayerState.PLAYING; // TODO: zmiana na ready
+        playerState = PlayerState.READY; // TODO: zmiana na ready
         rb2d = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        audioSource = GetComponent<AudioSource>();
+        
     }
 	
 	// Update is called once per frame
 	void Update () {
 
-        // Gaz, hamulec
-        speed += speedUpdate(speed);
-        // Prawo, lewo
-        xAxis = xAxisUpdate(skid);
-
-        audioSource.pitch = 1 + (speed / 400);
-        // Poślizg
-        // TODO: skid
-
-        // Zmiana w fizyce samochodu gracza
-        rb2d.velocity = new Vector2(xAxis, speed);
-
+        switch(playerState)
+        {
+            case PlayerState.READY:
+                if (Time.realtimeSinceStartup - startCeremonyInitTime > 5)
+                {
+                    if (!audioSources[4].isPlaying && sirensReady < 3)
+                    {
+                        audioSources[4].Play();
+                        sirensReady++;
+                    }
+                    if (sirensReady >= 3 && !sirenGo && !audioSources[4].isPlaying)
+                    {
+                        audioSources[5].Play();
+                        sirenGo = true;
+                    }
+                    if (sirenGo)
+                    {
+                        playerState = PlayerState.PLAYING;
+                    }
+                }
+                break;
+            case PlayerState.FINISH:
+                audioSources[0].Stop();
+                speed = 0.0000f;
+                
+                break;
+            case PlayerState.PLAYING:
+                if (!audioSources[0].isPlaying)
+                {
+                    audioSources[0].Play();
+                }
+                speed += speedUpdate(speed);
+                xAxis = xAxisUpdate(skid);
+                audioSources[0].pitch = 1 + (speed / 400);
+                //TODO: skid
+                rb2d.velocity = new Vector2(xAxis, speed);
+                break;
+        }
+        
     }
 
     // Fixed Update
@@ -69,6 +102,20 @@ public class PlayerController : MonoBehaviour {
             skid = true;
             skidInit = Time.realtimeSinceStartup;
         }*/
+    }
+
+    void OnCollisionEnter2D(Collision2D col)
+    {
+        if (col.gameObject.tag == "Bonus")
+        {
+            Destroy(col.gameObject);
+            audioSources[1].Play();
+        }
+        if (col.gameObject.tag == "Finish")
+        {
+            playerState = PlayerState.FINISH;
+            audioSources[2].Play();
+        }
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////

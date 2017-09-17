@@ -75,11 +75,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Bonus\Bonus.cs" />
     <Compile Include="Assets\Scripts\CameraController.cs" />
-    <Compile Include="Assets\Scripts\MapGenerator.cs" />
+    <Compile Include="Assets\Scripts\Generators\EnemiesGenerator.cs" />
+    <Compile Include="Assets\Scripts\Generators\MapGenerator.cs" />
     <Compile Include="Assets\Scripts\Obstacles\Abstract\EnemyVehicle.cs" />
     <Compile Include="Assets\Scripts\Obstacles\Detectors\DeleteEnemyDetector.cs" />
     <Compile Include="Assets\Scripts\Obstacles\Detectors\SoundDetector.cs" />
+    <Compile Include="Assets\Scripts\Obstacles\Detectors\StartEnemiesDetector.cs" />
+    <Compile Include="Assets\Scripts\Obstacles\EnemyBlueCar.cs" />
+    <Compile Include="Assets\Scripts\Obstacles\EnemyRedCar.cs" />
+    <Compile Include="Assets\Scripts\Obstacles\EnemyStartCar.cs" />
     <Compile Include="Assets\Scripts\Obstacles\EnemyTruck.cs" />
     <Compile Include="Assets\Scripts\Obstacles\EnemyYellowCar.cs" />
     <Compile Include="Assets\Scripts\Obstacles\Hole.cs" />
