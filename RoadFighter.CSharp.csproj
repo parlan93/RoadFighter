@@ -77,6 +77,11 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\CameraController.cs" />
     <Compile Include="Assets\Scripts\MapGenerator.cs" />
+    <Compile Include="Assets\Scripts\Obstacles\Abstract\EnemyVehicle.cs" />
+    <Compile Include="Assets\Scripts\Obstacles\Detectors\DeleteEnemyDetector.cs" />
+    <Compile Include="Assets\Scripts\Obstacles\Detectors\SoundDetector.cs" />
+    <Compile Include="Assets\Scripts\Obstacles\EnemyTruck.cs" />
+    <Compile Include="Assets\Scripts\Obstacles\EnemyYellowCar.cs" />
     <Compile Include="Assets\Scripts\Obstacles\Hole.cs" />
     <Compile Include="Assets\Scripts\PlayerController.cs" />
   </ItemGroup>

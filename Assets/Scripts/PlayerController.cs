@@ -4,39 +4,36 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 
+    public enum PlayerState
+    {
+        READY,
+        PLAYING,
+        GAMEOVER
+    }
+
+    public static PlayerState playerState { get; set; }
     Rigidbody2D rb2d;
     Animator animator;
-
-    float speed;
-    float maxSpeed;
-    float xAxis;
-
-    bool skid;
-    bool skidStart;
-    bool circleSkid;
-    bool circleSkidStart;
-    float skidInit;
-    int skidLeft;
-    float circleSkidInit;
-    int circleSkidLeft;
+    AudioSource audioSource;
+    float speed = 0f;
+    float maxSpeed = 400f;
+    float xAxis = 0f;
+    
+    bool skid = false;
+    bool skidStart = false;
+    bool circleSkid = false;
+    bool circleSkidStart = false;
+    float skidInit = 0;
+    int skidLeft = 0;
+    float circleSkidInit = 0f;
+    int circleSkidLeft = 0;
     
     // Use this for initialization
     void Start () {
+        playerState = PlayerState.PLAYING; // TODO: zmiana na ready
         rb2d = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-
-        speed = 0.0f;
-        maxSpeed = 400.0f;
-        xAxis = 0f;
-
-        skid = false;
-        skidStart = false;
-        circleSkid = false;
-        circleSkidStart = false;
-        skidInit = 0;
-        skidLeft = 0;
-        circleSkidInit = 0;
-        circleSkidLeft = 0;
+        audioSource = GetComponent<AudioSource>();
     }
 	
 	// Update is called once per frame
@@ -47,6 +44,7 @@ public class PlayerController : MonoBehaviour {
         // Prawo, lewo
         xAxis = xAxisUpdate(skid);
 
+        audioSource.pitch = 1 + (speed / 400);
         // Poślizg
         // TODO: skid
 
