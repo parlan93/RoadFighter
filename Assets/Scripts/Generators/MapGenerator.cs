@@ -6,7 +6,7 @@ public class MapGenerator : MonoBehaviour {
 
     // Stałe
     private const int MAP_START_FIXED_FRAGMENTS = 6;
-    private const int MAP_FRAGMENTS = 90;
+    private const int MAP_FRAGMENTS = 92;
     
     // Tablica prefabrykatów, z których złożona ma być mapa
     public GameObject[] mapPrefabs;

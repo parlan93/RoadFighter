@@ -79,6 +79,7 @@
     <Compile Include="Assets\Scripts\CameraController.cs" />
     <Compile Include="Assets\Scripts\Generators\EnemiesGenerator.cs" />
     <Compile Include="Assets\Scripts\Generators\MapGenerator.cs" />
+    <Compile Include="Assets\Scripts\Navigator.cs" />
     <Compile Include="Assets\Scripts\Obstacles\Abstract\EnemyVehicle.cs" />
     <Compile Include="Assets\Scripts\Obstacles\Detectors\DeleteEnemyDetector.cs" />
     <Compile Include="Assets\Scripts\Obstacles\Detectors\SoundDetector.cs" />
