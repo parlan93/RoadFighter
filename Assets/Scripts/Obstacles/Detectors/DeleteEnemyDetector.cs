@@ -16,6 +16,7 @@ public class DeleteEnemyDetector : MonoBehaviour {
         if (col.gameObject.tag == "Player")
         {
             Destroy(transform.parent.gameObject);
+            PlayerController.score += 50;
         }
     }
 }

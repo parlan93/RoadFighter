@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
 
@@ -38,16 +39,38 @@ public class PlayerController : MonoBehaviour {
     bool explosionTriggered = false;
     float explosionStart = 0f;
 
-    int fuel = 15;
+    int fuel = 100;
     float fuelDecreaseInit = Time.realtimeSinceStartup;
     bool noFuel = false;
+
+    public static int score { get; set; } 
+
+    public Text FuelValue;
+    Text fuelValue;
+    public Text SpeedValue;
+    Text speedValue;
+    public Text ScoreValue;
+    Text scoreValue;
+    public Text MessageValue;
+    Text messageValue;
+    public Image MessageBackground;
+    Image messageBackground;
     
     // Use this for initialization
     void Start () {
         playerState = PlayerState.READY; // TODO: zmiana na ready
         rb2d = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        
+
+        fuelValue = FuelValue.GetComponent<Text>();
+        speedValue = SpeedValue.GetComponent<Text>();
+        scoreValue = ScoreValue.GetComponent<Text>();
+        messageValue = MessageValue.GetComponent<Text>();
+        messageValue.text = "";
+        messageBackground = MessageBackground.GetComponent<Image>();
+        messageBackground.enabled = false;
+
+        score = 0;
     }
 	
 	// Update is called once per frame
@@ -77,8 +100,10 @@ public class PlayerController : MonoBehaviour {
             case PlayerState.FINISH:
                 audioSources[0].Stop();
                 audioSources[6].Stop();
-                speed = 0.0000f;
-                
+                speed = 0;
+                xAxis = 0;
+                messageValue.text = "CHECK POINT";
+                messageBackground.enabled = true;
                 break;
             case PlayerState.PLAYING:
                 if (!audioSources[0].isPlaying)
@@ -106,9 +131,19 @@ public class PlayerController : MonoBehaviour {
                 audioSources[6].Stop();
                 audioSources[7].Stop();
                 audioSources[8].Stop();
+                animator.SetBool("Skid", false);
+                animator.SetBool("CircleSkidLeft", false);
+                messageValue.text = "GAME OVER";
+                messageBackground.enabled = true;
                 break;
         }
-        
+
+        if (fuel >= 0) fuelValue.text = fuel.ToString();
+        else fuelValue.text = "0";
+        if (speed >= 0) speedValue.text = speed.ToString();
+        else speedValue.text = "0";
+        if (score >= 0) scoreValue.text = score.ToString();
+        else scoreValue.text = "0";
     }
 
     // Fixed Update
@@ -134,7 +169,8 @@ public class PlayerController : MonoBehaviour {
         {
             Destroy(col.gameObject);
             audioSources[1].Play();
-            fuel += 20;
+            fuel += 6;
+            score += 1000;
         }
         if (col.gameObject.tag == "Finish")
         {
@@ -264,6 +300,7 @@ public class PlayerController : MonoBehaviour {
         if (explosionInit)
         {
             speed = 0;
+            xAxis = 0;
             if (explosionTriggered)
             {
                 animator.SetTrigger("Explosion");
@@ -281,7 +318,7 @@ public class PlayerController : MonoBehaviour {
 
     private void FuelReduction()
     {
-        if ((Time.realtimeSinceStartup - fuelDecreaseInit) > 1.0f)
+        if ((Time.realtimeSinceStartup - fuelDecreaseInit) > .75f)
         {
             fuel--;
             fuelDecreaseInit = Time.realtimeSinceStartup;
