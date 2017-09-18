@@ -14,6 +14,14 @@ public class SoundDetector : MonoBehaviour {
         audioSource = GetComponent<AudioSource>();
     }
 
+    void Update()
+    {
+        if (PlayerController.playerState != PlayerController.PlayerState.PLAYING)
+        {
+            audioSource.Stop();
+        }
+    }
+
     void OnTriggerEnter2D(Collider2D col)
     {
         if (col.gameObject.tag == "Player")

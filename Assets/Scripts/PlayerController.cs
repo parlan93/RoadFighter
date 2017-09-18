@@ -33,6 +33,14 @@ public class PlayerController : MonoBehaviour {
     float startCeremonyInitTime = Time.realtimeSinceStartup;
     int sirensReady = 0;
     bool sirenGo = false;
+
+    bool explosionInit = false;
+    bool explosionTriggered = false;
+    float explosionStart = 0f;
+
+    int fuel = 15;
+    float fuelDecreaseInit = Time.realtimeSinceStartup;
+    bool noFuel = false;
     
     // Use this for initialization
     void Start () {
@@ -68,6 +76,7 @@ public class PlayerController : MonoBehaviour {
                 break;
             case PlayerState.FINISH:
                 audioSources[0].Stop();
+                audioSources[6].Stop();
                 speed = 0.0000f;
                 
                 break;
@@ -76,11 +85,27 @@ public class PlayerController : MonoBehaviour {
                 {
                     audioSources[0].Play();
                 }
-                speed += speedUpdate(speed);
+                if (!noFuel)
+                {
+                    speed += speedUpdate(speed);
+                }
                 xAxis = xAxisUpdate(skid);
                 audioSources[0].pitch = 1 + (speed / 400);
-                //TODO: skid
+                SkidUpdate();
+                ExplosionChecker();
+                FuelReduction();
                 rb2d.velocity = new Vector2(xAxis, speed);
+                break;
+            case PlayerState.GAMEOVER:
+                audioSources[0].Stop();
+                audioSources[1].Stop();
+                audioSources[2].Stop();
+                audioSources[3].Stop();
+                audioSources[4].Stop();
+                audioSources[5].Stop();
+                audioSources[6].Stop();
+                audioSources[7].Stop();
+                audioSources[8].Stop();
                 break;
         }
         
@@ -89,19 +114,18 @@ public class PlayerController : MonoBehaviour {
     // Fixed Update
     void FixedUpdate()
     {
-        Debug.Log("SPEED: " + speed); // TODO: tymczasowe - do usunięcia w wersji RELEASE
+        Debug.Log("FUEL: " + fuel); // TODO: tymczasowe - do usunięcia w wersji RELEASE
     }
 
     // On Trigger Enter 2D
     void OnTriggerEnter2D(Collider2D col)
     {
-        // TODO: skidTrigger
-        // W momencie kiedy samochód gracza najedzie na dziurę, wywoła trigger, który spowoduje wpadnięcie w poślizg
-        /*if (col.gameObject.CompareTag("Hole"))
+        //W momencie kiedy samochód gracza najedzie na dziurę, wywoła trigger, który spowoduje wpadnięcie w poślizg
+        if (col.gameObject.CompareTag("Hole"))
         {
             skid = true;
             skidInit = Time.realtimeSinceStartup;
-        }*/
+        }
     }
 
     void OnCollisionEnter2D(Collision2D col)
@@ -110,11 +134,33 @@ public class PlayerController : MonoBehaviour {
         {
             Destroy(col.gameObject);
             audioSources[1].Play();
+            fuel += 20;
         }
         if (col.gameObject.tag == "Finish")
         {
             playerState = PlayerState.FINISH;
+
+            audioSources[0].Stop();
+            audioSources[1].Stop();
+            audioSources[3].Stop();
+            audioSources[4].Stop();
+            audioSources[5].Stop();
+            audioSources[6].Stop();
+            audioSources[7].Stop();
+            audioSources[8].Stop();
+
             audioSources[2].Play();
+        }
+        if (col.gameObject.tag == "Bound" && speed > 200f)
+        {
+            explosionInit = true;
+            explosionTriggered = true;
+            explosionStart = Time.realtimeSinceStartup;
+        }
+        if (col.gameObject.CompareTag("EnemyCar"))
+        {
+            skid = true;
+            skidInit = Time.realtimeSinceStartup;
         }
     }
 
@@ -170,26 +216,95 @@ public class PlayerController : MonoBehaviour {
         }
         return 0f;
     }
-
-    // TODO: skidUpdate and skidChecker
-    private void skidUpdate()
+    
+    private void SkidUpdate()
     {
         if (skid)
         {
             if (!skidStart)
             {
+                audioSources[6].Play();
                 skidLeft = Random.Range(0, 2);
                 skidStart = true;
                 animator.SetBool("Skid", skid);
             }
             if (skidLeft == 0) xAxis = 25f;
             else xAxis = -25f;
-            if ((Time.realtimeSinceStartup - skidInit) > 1 && speed > 300f && !circleSkid)
+            if ((Time.realtimeSinceStartup - skidInit) < 1 && speed < 320f && !circleSkid)
+            {
+                skid = false;
+                skidStart = false;
+                animator.SetBool("Skid", skid);
+                audioSources[6].Stop();
+            }
+            if ((Time.realtimeSinceStartup - skidInit) > 1 && speed > 320f && !circleSkid)
             {
                 circleSkid = true;
                 circleSkidStart = true;
                 animator.SetBool("CircleSkidLeft", circleSkid);
             }
+            if (circleSkid)
+            {
+                if (speed < 4f)
+                {
+                    circleSkid = false;
+                    circleSkidStart = false;
+                    skid = false;
+                    skidStart = false;
+                    audioSources[6].Stop();
+                    animator.SetBool("CircleSkidLeft", circleSkid);
+                    animator.SetBool("Skid", skid);
+                }
+            }
+        }
+    }
+
+    private void ExplosionChecker()
+    {
+        if (explosionInit)
+        {
+            speed = 0;
+            if (explosionTriggered)
+            {
+                animator.SetTrigger("Explosion");
+                audioSources[7].Play();
+                explosionTriggered = false;
+            }
+            if ((Time.realtimeSinceStartup - explosionStart) > 2f)
+            {
+                explosionInit = false;
+                fuel -= 5;
+            }
+            
+        }
+    }
+
+    private void FuelReduction()
+    {
+        if ((Time.realtimeSinceStartup - fuelDecreaseInit) > 1.0f)
+        {
+            fuel--;
+            fuelDecreaseInit = Time.realtimeSinceStartup;
+        }
+        if (fuel < 10)
+        {
+            if (!audioSources[8].isPlaying)
+            {
+                audioSources[8].Play();
+            }
+        }
+        else if (audioSources[8].isPlaying)
+        {
+            audioSources[8].Stop();
+        }
+        if (fuel <= 0 && speed > 0)
+        {
+            noFuel = true;
+            speed--;
+        }
+        if (noFuel && speed <= 0)
+        {
+            playerState = PlayerState.GAMEOVER;
         }
     }
 
