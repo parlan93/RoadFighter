@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
 
+    // Enum
     public enum PlayerState
     {
         READY,
@@ -13,14 +14,24 @@ public class PlayerController : MonoBehaviour {
         GAMEOVER
     }
 
+    // Dźwięki
     public AudioSource[] audioSources;
+
+    // Stan gracza
     public static PlayerState playerState { get; set; }
+
+    // Ciało gracza 
     Rigidbody2D rb2d;
+
+    // Animator
     Animator animator;
+
+    // Poruszanie
     float speed = 0f;
     float maxSpeed = 400f;
     float xAxis = 0f;
     
+    // Poślizg
     bool skid = false;
     bool skidStart = false;
     bool circleSkid = false;
@@ -30,21 +41,26 @@ public class PlayerController : MonoBehaviour {
     float circleSkidInit = 0f;
     int circleSkidLeft = 0;
 
+    // Start
     bool isStartCeremony = true;
-    float startCeremonyInitTime = Time.realtimeSinceStartup;
+    float startCeremonyInitTime;
     int sirensReady = 0;
     bool sirenGo = false;
 
+    // Eksplozja
     bool explosionInit = false;
     bool explosionTriggered = false;
     float explosionStart = 0f;
 
+    // Paliwo
     int fuel = 100;
-    float fuelDecreaseInit = Time.realtimeSinceStartup;
+    float fuelDecreaseInit;
     bool noFuel = false;
 
+    // Wynik
     public static int score { get; set; } 
 
+    // GUI
     public Text FuelValue;
     Text fuelValue;
     public Text SpeedValue;
@@ -55,29 +71,49 @@ public class PlayerController : MonoBehaviour {
     Text messageValue;
     public Image MessageBackground;
     Image messageBackground;
-    
+
+    // Sterowanie
+    bool gas = false;
+    bool brake = false;
+    bool left = false;
+    bool right = false;
+
     // Use this for initialization
     void Start () {
-        playerState = PlayerState.READY; // TODO: zmiana na ready
+
+        // Inicjacja początkowa
+        playerState = PlayerState.READY; 
         rb2d = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
 
+        // Pobranie czasu rozpoczęcia ceremonii startowej
+        startCeremonyInitTime = Time.realtimeSinceStartup;
+        // Pobranie czasu rozpoczęcia ubywania paliwa
+        fuelDecreaseInit = Time.realtimeSinceStartup;
+
+        // Pobranie komponentów GUI
         fuelValue = FuelValue.GetComponent<Text>();
         speedValue = SpeedValue.GetComponent<Text>();
         scoreValue = ScoreValue.GetComponent<Text>();
         messageValue = MessageValue.GetComponent<Text>();
+        // Ustawienie komunikatu na pusty
         messageValue.text = "";
+        // Pobranie tła komunikatu
         messageBackground = MessageBackground.GetComponent<Image>();
+        // Ukrycie tła komunikaty
         messageBackground.enabled = false;
 
+        // Ustawienie początkowego stanu punktów
         score = 0;
     }
 	
 	// Update is called once per frame
 	void Update () {
-
+       
+        // Switch po zmiennej playerState 
         switch(playerState)
         {
+            // W momencie gdy gracz ma czas na przygotowanie
             case PlayerState.READY:
                 if (Time.realtimeSinceStartup - startCeremonyInitTime > 5)
                 {
@@ -97,6 +133,7 @@ public class PlayerController : MonoBehaviour {
                     }
                 }
                 break;
+            // W momencie gdy gracz dotrze na metę
             case PlayerState.FINISH:
                 audioSources[0].Stop();
                 audioSources[6].Stop();
@@ -105,6 +142,7 @@ public class PlayerController : MonoBehaviour {
                 messageValue.text = "CHECK POINT";
                 messageBackground.enabled = true;
                 break;
+            // W momencie gdy gracz toczy rozgrywkę
             case PlayerState.PLAYING:
                 if (!audioSources[0].isPlaying)
                 {
@@ -121,6 +159,7 @@ public class PlayerController : MonoBehaviour {
                 FuelReduction();
                 rb2d.velocity = new Vector2(xAxis, speed);
                 break;
+            // W momencie gdy gracz przegra
             case PlayerState.GAMEOVER:
                 audioSources[0].Stop();
                 audioSources[1].Stop();
@@ -138,21 +177,17 @@ public class PlayerController : MonoBehaviour {
                 break;
         }
 
+        // Ubywanie paliwa
         if (fuel >= 0) fuelValue.text = fuel.ToString();
         else fuelValue.text = "0";
         if (speed >= 0) speedValue.text = speed.ToString();
         else speedValue.text = "0";
         if (score >= 0) scoreValue.text = score.ToString();
         else scoreValue.text = "0";
+        
     }
 
-    // Fixed Update
-    void FixedUpdate()
-    {
-        Debug.Log("FUEL: " + fuel); // TODO: tymczasowe - do usunięcia w wersji RELEASE
-    }
-
-    // On Trigger Enter 2D
+    // Gdy pojazd użytkownika uruchomi Trigger
     void OnTriggerEnter2D(Collider2D col)
     {
         //W momencie kiedy samochód gracza najedzie na dziurę, wywoła trigger, który spowoduje wpadnięcie w poślizg
@@ -163,6 +198,7 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
+    // Gdy pojazd użytkownika dozna kolizji z innym obiektem
     void OnCollisionEnter2D(Collision2D col)
     {
         if (col.gameObject.tag == "Bonus")
@@ -208,19 +244,19 @@ public class PlayerController : MonoBehaviour {
 
     private float speedUpdate(float speed)
     {
-        if (Input.GetButton("Accelerator") && !Input.GetButton("Brake") && speed < maxSpeed)
+        if (gas && !brake && speed < maxSpeed) 
         {
             return 2f;
         }
         else
         {
-            if (!Input.GetButton("Accelerator") && !Input.GetButton("Brake") && speed > 0)
+            if (!gas && !brake && speed > 0)
             {
                 return -1f;
             } 
             else
             {
-                if (Input.GetButton("Brake") && speed >= 0)
+                if (brake && speed >= 0)
                 {
                     return -4f;
                 }
@@ -234,17 +270,17 @@ public class PlayerController : MonoBehaviour {
 
     private float xAxisUpdate(bool skid)
     {
-        if (Input.GetButton("Left") && !skid)
+        if (left && !skid)
         {
-            if (Input.GetButton("Right"))
+            if (right)
             {
                 return 0f;
             }
             return -100f;
         }
-        if (Input.GetButton("Right") && !skid)
+        if (right && !skid)
         {
-            if (Input.GetButton("Left"))
+            if (left)
             {
                 return 0f;
             }
@@ -343,6 +379,46 @@ public class PlayerController : MonoBehaviour {
         {
             playerState = PlayerState.GAMEOVER;
         }
+    }
+
+    public void gasDown()
+    {
+        gas = true;
+    }
+
+    public void gasUp()
+    {
+        gas = false;    
+    }
+
+    public void brakeDown()
+    {
+        brake = true;
+    }
+
+    public void brakeUp()
+    {
+        brake = false;
+    }
+
+    public void leftDown()
+    {
+        left = true;
+    }
+
+    public void leftUp()
+    {
+        left = false;
+    }
+
+    public void rightDown()
+    {
+        right = true;
+    }
+
+    public void rightUp()
+    {
+        right = false;
     }
 
 }
